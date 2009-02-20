@@ -2,45 +2,87 @@ module Cash
   class Mock < HashWithIndifferentAccess
     attr_accessor :servers
 
+    class CacheEntry
+      attr_reader :value
+      
+      def self.default_ttl
+        1_000_000
+      end
+      
+      def initialize(value, raw, ttl)
+        if raw
+          @value = value.to_s
+        else
+          @value = Marshal.dump(value)
+        end
+        
+        if ttl.zero?
+          @ttl = self.class.default_ttl
+        else
+          @ttl = ttl
+        end
+        
+        @expires_at = Time.now + @ttl
+      end
+      
+      def expired?
+        Time.now > @expires_at
+      end
+      
+      def increment(amount = 1)
+        @value = (@value.to_i + amount).to_s
+      end
+      
+      def decrement(amount = 1)
+        @value = (@value.to_i - amount).to_s
+      end
+      
+      def unmarshal
+        Marshal.load(@value)
+      end
+      
+      def to_i
+        @value.to_i
+      end
+    end
+    
     def get_multi(keys)
-      slice(*keys).collect { |k,v| [k, Marshal.load(v)] }.to_hash
+      slice(*keys).collect { |k,v| [k, v.unmarshal] }.to_hash
     end
 
-    def set(key, value, ttl = 0, raw = false)
-      self[key] = marshal(value, raw)
+    def set(key, value, ttl = CacheEntry.default_ttl, raw = false)
+      self[key] = CacheEntry.new(value, raw, ttl)
     end
 
     def get(key, raw = false)
+      return nil unless self.has_unexpired_key?(key)
+      
       if raw
-        self[key]
+        self[key].value
       else
-        if self.has_key?(key)
-          Marshal.load(self[key])
-        else
-          nil
-        end
+        self[key].unmarshal
       end
     end
 
     def incr(key, amount = 1)
-      if self.has_key?(key)
-        self[key] = (self[key].to_i + amount).to_s
+      if self.has_unexpired_key?(key)
+        self[key].increment(amount)
         self[key].to_i
       end
     end
 
     def decr(key, amount = 1)
-      if self.has_key?(key)
-        self[key] = (self[key].to_i - amount).to_s
+      if self.has_unexpired_key?(key)
+        self[key].decrement(amount)
         self[key].to_i
       end
     end
 
-    def add(key, value, ttl = 0, raw = false)
-      if self.has_key?(key)
+    def add(key, value, ttl = CacheEntry.default_ttl, raw = false)
+      if self.has_unexpired_key?(key)
         "NOT_STORED\r\n"
       else
-        self[key] = marshal(value, raw)
+        set(key, value, ttl, raw)
         "STORED\r\n"
       end
     end
@@ -65,22 +107,9 @@ module Cash
       [0, Hash.new(0)]
     end
 
-    private
-
-    def marshal(value, raw)
-      if raw
-        value.to_s
-      else
-        Marshal.dump(value)
-      end
+    def has_unexpired_key?(key)
+      self.has_key?(key) && !self[key].expired?
     end
-
-    def unmarshal(marshaled_obj)
-      Marshal.load(marshaled_obj)
-    end
-
-    def deep_clone(obj)
-      unmarshal(marshal(obj))
-    end
+    
   end
 end
