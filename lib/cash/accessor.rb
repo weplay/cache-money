@@ -39,14 +39,14 @@ module Cash
 
       def add(key, value, options = {})
         if repository.add(cache_key(key), value, options[:ttl] || 0, options[:raw]) == "NOT_STORED\r\n"
-          yield
+          yield if block_given?
         end
       end
 
       def set(key, value, options = {})
         repository.set(cache_key(key), value, options[:ttl] || 0, options[:raw])
       end
-
+ 
       def incr(key, delta = 1, ttl = 0)
         repository.incr(cache_key = cache_key(key), delta) || begin
           repository.add(cache_key, (result = yield).to_s, ttl, true) { repository.incr(cache_key) }
