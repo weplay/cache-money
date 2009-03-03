@@ -114,7 +114,7 @@ module Cash
     end
 
     def flush_all
-      log('flush_all')
+      log('< flush_all')
       clear
     end
 
