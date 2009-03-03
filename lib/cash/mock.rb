@@ -51,16 +51,34 @@ module Cash
     end
 
     def set(key, value, ttl = CacheEntry.default_ttl, raw = false)
+      log "< set #{key} #{ttl}"
       self[key] = CacheEntry.new(value, raw, ttl)
+      log('> STORED')
     end
 
     def get(key, raw = false)
-      return nil unless self.has_unexpired_key?(key)
+      log "< get #{key}"
+      unless self.has_unexpired_key?(key)
+        log('> END')
+        return nil
+      end
       
+      log("> sending key #{key}")
+      log('> END')
       if raw
         self[key].value
       else
         self[key].unmarshal
+      end
+    end
+    
+    def delete(key, options = {})
+      log "< delete #{key}"
+      if self.has_unexpired_key?(key)
+        log "> DELETED"
+        super(key)
+      else
+        log "> NOT FOUND"
       end
     end
 
@@ -96,6 +114,7 @@ module Cash
     end
 
     def flush_all
+      log('flush_all')
       clear
     end
 
@@ -109,6 +128,14 @@ module Cash
 
     def has_unexpired_key?(key)
       self.has_key?(key) && !self[key].expired?
+    end
+    
+    def log(message)
+      logger.debug(message)
+    end
+    
+    def logger
+      @logger ||= ActiveSupport::BufferedLogger.new(Rails.root.join('log/cash_mock.log'))
     end
     
   end
