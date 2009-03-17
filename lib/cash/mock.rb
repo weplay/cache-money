@@ -8,6 +8,10 @@ module Cash
       def self.default_ttl
         1_000_000
       end
+
+      def self.now
+        Time.now
+      end
       
       def initialize(value, raw, ttl)
         if raw
@@ -22,11 +26,11 @@ module Cash
           @ttl = ttl
         end
         
-        @expires_at = Time.now + @ttl
+        @expires_at = self.class.now + @ttl
       end
       
       def expired?
-        Time.now > @expires_at
+        self.class.now > @expires_at
       end
       
       def increment(amount = 1)
