@@ -29,6 +29,7 @@ module Cash
         @expires_at = self.class.now + @ttl
       end
       
+      
       def expired?
         self.class.now > @expires_at
       end
@@ -48,6 +49,12 @@ module Cash
       def to_i
         @value.to_i
       end
+    end
+    
+    attr_accessor :logging
+    
+    def initialize
+      @logging = false
     end
     
     def get_multi(keys)
@@ -135,6 +142,7 @@ module Cash
     end
     
     def log(message)
+      return unless logging
       logger.debug(message)
     end
     
