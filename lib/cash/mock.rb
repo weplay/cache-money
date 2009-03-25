@@ -58,7 +58,7 @@ module Cash
     end
     
     def get_multi(keys)
-      slice(*keys).collect { |k,v| [k, v.unmarshal] }.to_hash
+      slice(*keys).collect { |k,v| [k, v.unmarshal] }.to_hash_without_nils
     end
 
     def set(key, value, ttl = CacheEntry.default_ttl, raw = false)

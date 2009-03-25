@@ -64,7 +64,7 @@ module Cash
 
     def get_multi(keys)
       values = keys.collect { |key| get(key) }
-      keys.zip(values).to_hash
+      keys.zip(values).to_hash_without_nils
     end
 
     def flush
