@@ -39,7 +39,7 @@ module Cash
     end
 
     def exponential_sleep(count)
-      @runtime += Benchmark::measure { sleep((2**count) / 2.0) }
+      sleep((2**count) / 2.0)
     end
 
     private
