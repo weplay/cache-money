@@ -53,6 +53,11 @@ module Cash
         partial_indices = optionss.collect { |options| attribute_value_pairs_for_conditions(options[:conditions]) }
         return if partial_indices.include?(nil)
         attribute_value_pairs = partial_indices.sum.sort { |x, y| x[0] <=> y[0] }
+        
+        attribute_value_pairs.each do |attribute_value_pair|
+          return false if attribute_value_pair.last.is_a?(Array)
+        end
+        
         if index = indexed_on?(attribute_value_pairs.collect { |pair| pair[0] })
           if index.matches?(self)
             [attribute_value_pairs, index]
