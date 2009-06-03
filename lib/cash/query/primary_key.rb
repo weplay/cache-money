@@ -17,6 +17,10 @@ module Cash
         super(:conditions => { :id => @ids.first })
       end
 
+      def order_matters?
+        @expects_array
+      end
+      
       protected
       def deserialize_objects(objects)
         convert_to_active_record_collection(super(objects))

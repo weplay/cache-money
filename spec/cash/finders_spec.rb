@@ -12,6 +12,14 @@ module Cash
               Story.find(story.id).should == story
             end
           end
+          
+          describe '#find(1) (on a descending index)' do
+            it "does not use the database" do
+              plot = Plot.create!
+              mock(Plot.connection).execute.never
+              Plot.find(plot.id).should == plot
+            end
+          end
 
           describe '#find(object)' do
             it 'uses the objects quoted id' do

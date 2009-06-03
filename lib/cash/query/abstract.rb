@@ -47,6 +47,10 @@ module Cash
         false
       end
 
+      def order_matters?
+        true
+      end
+
       private
       def cacheable?(*optionss)
         optionss.each { |options| return unless safe_options_for_cache?(options) }

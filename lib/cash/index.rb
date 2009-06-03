@@ -75,7 +75,7 @@ module Cash
 
     def matches?(query)
       query.calculation? ||
-      (query.order == ['id', order] &&
+      ((!query.order_matters? || query.order == ['id', order]) &&
       (!limit || (query.limit && query.limit + query.offset <= limit)))
     end
 

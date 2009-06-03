@@ -32,12 +32,18 @@ Spec::Runner.configure do |config|
 
     Character = Class.new(ActiveRecord::Base)
     Story = Class.new(ActiveRecord::Base)
+    Plot = Class.new(ActiveRecord::Base)
+    
     Story.has_many :characters
 
     Story.class_eval do
       index :title
       index [:id, :title]
       index :published
+    end
+
+    Plot.class_eval do
+      index :id, :order => :desc
     end
 
     Epic = Class.new(Story)
