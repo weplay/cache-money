@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'rubygems'
-require 'activesupport'
+require 'active_support'
 require 'activerecord'
 
 require 'cash/lock'
