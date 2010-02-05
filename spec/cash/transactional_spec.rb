@@ -7,7 +7,7 @@ module Cash
       @value = "stuff to be cached"
       @key   = "key"
     end
-
+    
     describe 'Basic Operations' do
       it "gets through the real cache" do
         $memcache.set(@key, @value)
@@ -20,7 +20,7 @@ module Cash
       end
 
       it "increments through the real cache" do
-        @cache.set(@key, 0)
+        @cache.set(@key, 0, 0, true)
         @cache.incr(@key, 3)
 
         @cache.get(@key, true).to_i.should == 3
@@ -28,7 +28,7 @@ module Cash
       end
 
       it "decrements through the real cache" do
-        @cache.set(@key, 0)
+        @cache.set(@key, 0, 0, true)
         @cache.incr(@key, 3)
         @cache.decr(@key, 2)
 
@@ -130,7 +130,7 @@ module Cash
       describe 'Increment and Decrement' do
         describe '#incr' do
           it "works" do
-            @cache.set(@key, 0)
+            @cache.set(@key, 0, 0, true)
             @cache.incr(@key)
             @cache.transaction do
               @cache.incr(@key).should == 2
@@ -139,7 +139,7 @@ module Cash
 
           it "is buffered" do
             @cache.transaction do
-              @cache.set(@key, 0)
+              @cache.set(@key, 0, 0, true)
               @cache.incr(@key, 2).should == 2
               @cache.get(@key).should == 2
               $memcache.get(@key).should == nil
@@ -158,7 +158,7 @@ module Cash
 
         describe '#decr' do
           it "works" do
-            @cache.set(@key, 0)
+            @cache.set(@key, 0, 0, true)
             @cache.incr(@key)
             @cache.transaction do
               @cache.decr(@key).should == 0
@@ -167,7 +167,7 @@ module Cash
 
           it "is buffered" do
             @cache.transaction do
-              @cache.set(@key, 0)
+              @cache.set(@key, 0, 0, true)
               @cache.incr(@key, 3)
               @cache.decr(@key, 2).should == 1
               @cache.get(@key, true).to_i.should == 1
@@ -185,7 +185,7 @@ module Cash
 
           it "bottoms out at zero" do
             @cache.transaction do
-              @cache.set(@key, 0)
+              @cache.set(@key, 0, 0, true)
               @cache.incr(@key, 1)
               @cache.get(@key, true).should == 1
               @cache.decr(@key)
@@ -336,7 +336,7 @@ module Cash
 
       describe '#incr' do
         it "increment be atomic" do
-          @cache.set(@key, 0)
+          @cache.set(@key, 0, 0, true)
           @cache.transaction do
             @cache.incr(@key)
             $memcache.incr(@key)
@@ -346,11 +346,11 @@ module Cash
         end
 
         it "interleaved, etc. increments and sets be ordered" do
-          @cache.set(@key, 0)
+          @cache.set(@key, 0, 0, true)
           @cache.transaction do
             @cache.incr(@key)
             @cache.incr(@key)
-            @cache.set(@key, 0)
+            @cache.set(@key, 0, 0, true)
             @cache.incr(@key)
             @cache.incr(@key)
           end
@@ -361,7 +361,7 @@ module Cash
 
       describe '#decr' do
         it "decrement be atomic" do
-          @cache.set(@key, 0)
+          @cache.set(@key, 0, 0, true)
           @cache.incr(@key, 3)
           @cache.transaction do
             @cache.decr(@key)

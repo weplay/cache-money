@@ -77,7 +77,7 @@ module Cash
     describe '#incr' do
       describe 'when there is a cache hit' do
         before do
-          Story.set("count", 0)
+          Story.set("count", 0, :raw => true)
         end
 
         it 'increments the value of the cache' do
