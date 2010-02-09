@@ -80,6 +80,8 @@ module Cash
     end
     
     def ensure_cached_by_primary_key(miss_or_misses)
+      return if primary_key?
+      
       Array(miss_or_misses).each do |miss|
         add_object_to_primary_key_cache([primary_key, miss.send(primary_key)], miss)
       end
