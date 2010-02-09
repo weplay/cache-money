@@ -330,9 +330,19 @@ module Cash
         end
 
         describe '#find_by_attr' do
+          before(:each) do
+            Story.find_by_title(@story.title)  # populates cache for title with [@story.id]
+          end
+          
           it 'populates the cache' do
-            Story.find_by_title(@story.title)
             Story.fetch("title/#{@story.title}").should == [@story.id]
+          end
+          
+          it 'populates the cache when finding by non-primary-key attribute' do
+            Story.find_by_title(@story.title)  # populates cache for id with record
+            
+            mock(Story.connection).execute.never
+            Story.find_by_title(@story.title).id.should == @story.id  # should hit cache only
           end
         end
 
