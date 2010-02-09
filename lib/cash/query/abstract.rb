@@ -16,6 +16,8 @@ module Cash
           cache_keys, index = cache_keys(cache_config[0]), cache_config[1]
 
           misses, missed_keys, objects = hit_or_miss(cache_keys, index, get_options)
+          index.ensure_cached_by_primary_key(misses) unless get_options[:raw]
+          
           format_results(cache_keys, choose_deserialized_objects_if_possible(missed_keys, cache_keys, misses, objects))
         else
           uncacheable

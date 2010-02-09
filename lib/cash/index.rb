@@ -78,6 +78,12 @@ module Cash
       ((!query.order_matters? || query.order == ['id', order]) &&
       (!limit || (query.limit && query.limit + query.offset <= limit)))
     end
+    
+    def ensure_cached_by_primary_key(miss_or_misses)
+      Array(miss_or_misses).each do |miss|
+        add_object_to_primary_key_cache([primary_key, miss.send(primary_key)], miss)
+      end
+    end
 
     private
     def old_and_new_attribute_value_pairs(object)
